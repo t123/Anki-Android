@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	android:orientation="vertical">
+
+	<ListView android:id="@+id/vocab_words"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:fastScrollEnabled="true"
+		android:orientation="vertical"
+		>
+	</ListView>
+
+	<LinearLayout android:id="@+id/vocab_controls"
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent"
+		android:gravity="bottom"
+		>
+		
+		<Button	android:id="@+id/vocab_previous"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="back"/>
+			
+		<Button	android:id="@+id/vocab_shuffle"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="shuffle"/>
+		
+		<Button	android:id="@+id/vocab_reverse"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="reverse"/>
+			
+		<Button	android:id="@+id/vocab_next"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:text="next"/>
+	</LinearLayout>
+	
+</LinearLayout>

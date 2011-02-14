@@ -174,6 +174,7 @@ public class StudyOptions extends Activity {
 */
     private View mStudyOptionsView;
     private Button mButtonStart;
+    private Button mVocab;
     private ToggleButton mToggleCram;
     private TextView mTextTitle;
     private TextView mTextDeckName;
@@ -281,6 +282,10 @@ public class StudyOptions extends Activity {
                 case R.id.studyoptions_card_browser:
                     openCardBrowser();
                     return;
+                case R.id.studyoptions_vocab:
+                	startVocab();
+                	return;
+                	
                 default:
                     return;
             }
@@ -475,6 +480,14 @@ public class StudyOptions extends Activity {
     	}
     }
 
+    private void startVocab() {
+    	Deck deck = AnkiDroidApp.deck();
+        if (deck != null) {
+        	Intent reviewer = new Intent(StudyOptions.this, Vocab.class);
+            reviewer.putExtra("deckFilename", mDeckFilename);
+    		startActivityForResult(reviewer, REQUEST_REVIEW);
+        }
+    }
 
     private void startEarlyReview() {
 		Deck deck = AnkiDroidApp.deck();
@@ -570,6 +583,7 @@ public class StudyOptions extends Activity {
         mButtonStart = (Button) mStudyOptionsView.findViewById(R.id.studyoptions_start);
         mToggleCram = (ToggleButton) mStudyOptionsView.findViewById(R.id.studyoptions_cram);
         mCardBrowser = (Button) mStudyOptionsView.findViewById(R.id.studyoptions_card_browser);
+        mVocab = (Button) mStudyOptionsView.findViewById(R.id.studyoptions_vocab);
 
         mTextReviewsDue = (TextView) mStudyOptionsView.findViewById(R.id.studyoptions_reviews_due);
         mTextNewToday = (TextView) mStudyOptionsView.findViewById(R.id.studyoptions_new_today);
@@ -685,6 +699,7 @@ public class StudyOptions extends Activity {
         mButtonCongratsReviewEarly.setOnClickListener(mButtonClickListener);
         mButtonCongratsOpenOtherDeck.setOnClickListener(mButtonClickListener);
         mButtonCongratsFinish.setOnClickListener(mButtonClickListener);
+        mVocab.setOnClickListener(mButtonClickListener);
         
         // The view to use when there is no external storage available
         mNoExternalStorageView = getLayoutInflater().inflate(R.layout.studyoptions_nostorage, null);

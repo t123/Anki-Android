@@ -194,5 +194,10 @@
          	android:layout_width="0dip"
          	android:layout_weight="1"
 			android:text="card browser"/>
+		<Button android:id="@+id/studyoptions_vocab"
+         	android:layout_height="fill_parent"
+         	android:layout_width="0dip"
+         	android:layout_weight="1"
+			android:text="vocab"/>
 	</LinearLayout>
 </LinearLayout>
