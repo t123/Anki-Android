@@ -28,9 +28,7 @@
   <string name="ok">D\'acord</string>
   <string name="deck_upgrade_too_old_version">El paquets de les versions posteriors a la 39 no són compatibles amb AnkiDroid, si us plau, obriu el paquet a la versió de l\'Anki d\'escriptori per actualitzar-ho a la versió més recent.</string>
   <string name="deck_upgrade_version_61_has_latex">El paquet no es pot actualitzar del tot, ja que conté expressions LaTeX, podeu obrir el paquet amb la versió de l\'Anki d\'escriptori per actualitzar el paquet a la darrera versió i regenerar el LaTeX.</string>
-  <string name="deckpicker_title">Trieu un paquet (%1$d de %2$d pendents)</string>
   <string name="deckpicker_title_nosdcard">La targeta SD no està disponible</string>
-  <string name="deckpicker_due">%1$d de %2$d pendents</string>
   <string name="deckpicker_new">%d noves avui</string>
   <string name="deckpicker_loaddeck">S\'està carregant el paquet...</string>
   <string name="deckpicker_nodeck">No s\'ha trobat cap paquet.</string>
@@ -155,6 +153,35 @@
   <string name="close">Tanca</string>
   <string name="select_card_model">Trieu una plantilla per les fitxes</string>
   <string name="select">Seleccioneu</string>
+  <string name="card_browser">Card Browser</string>
+  <string name="card_browser_load">Loading cards</string>
+  <string name="card_browser_delete_card">Delete card</string>
+  <string name="card_browser_suspend_card">Suspend card</string>
+  <string name="card_browser_unsuspend_card">Unsuspend card</string>
+  <string name="card_browser_mark_card">Mark card</string>
+  <string name="card_browser_unmark_card">Unmark card</string>
+  <string name="delete_card_title">Delete Card</string>
+  <string name="delete_card_message">Really delete this card?\n%1$s\n%2$s</string>
+  <string name="card_browser_show_marked">Show marked cards</string>
+  <string name="card_browser_show_suspended">Show suspended cards</string>
+  <string name="card_browser_change_display_order">Change display order</string>
+  <string name="card_browser_change_display_order_title">Choose display order</string>
+  <string name="card_browser_card_details">Card details</string>
+  <string name="card_details_question">Question</string>
+  <string name="card_details_answer">Answer</string>
+  <string name="card_details_due">Due</string>
+  <string name="card_details_now">Now</string>
+  <string name="card_details_interval">Interval</string>
+  <string name="card_details_ease">Ease</string>
+  <string name="card_details_average_time">Average time</string>
+  <string name="card_details_total_time">Total time</string>
+  <string name="card_details_yes_count">Yes count</string>
+  <string name="card_details_no_count">No count</string>
+  <string name="card_details_added">Added</string>
+  <string name="card_details_changed">Changed</string>
+  <string name="card_details_model">Model</string>
+  <string name="card_details_card_model">Card model</string>
+  <string name="statistics">Statistics</string>
   <string name="loading_deck">S\'està carregant el paquet. Un moment...</string>
   <string name="connection_needed">En aquest moment sou fora de línia.</string>
   <string name="currently_downloading">S\'està baixant</string>
@@ -192,7 +219,6 @@
   <string name="studyoptions_session_questions">Màxim de fitxes (num.):</string>
   <string name="studyoptions_start">Comença</string>
   <string name="studyoptions_more">Opcions d\'aprenentatge</string>
-  <string name="studyoptions_window_title">%1$s (%2$d de %3$d pendents)</string>
   <string name="studyoptions_more_dialog_title">Més</string>
   <string name="studyoptions_more_save">Desa</string>
   <string name="studyoptions_nodeck_title">No hi ha cap paquet carregat</string>
@@ -255,12 +281,13 @@
   <string name="sync_preparing_full_sync_message">S\'està preparant una sincronització completa...</string>
   <string name="sync_uploading_message">S\'està pujant...</string>
   <string name="sync_downloading_message">S\'està baixant...</string>
-  <string name="sync_complete_message">S\'ha acabat la sincronització.</string>
+  <string name="sync_complete_message">Closing...</string>
   <string name="sync_determining_differences_message">S\'estan determinant les diferències...</string>
   <string name="sync_transferring_payload_message">S\'està transferint la càrrega...</string>
   <string name="sync_applying_reply_message">S\'està aplicant la resposta...</string>
   <string name="sync_no_changes_message">No s\'ha trobat cap canvi.</string>
   <string name="sync_log_error_message">Error: El paquet no s\'ha sincronitzat</string>
+  <string name="sync_log_error_specific">Syncing error, type: %1$s, message: %2$s</string>
   <string name="sync_log_no_changes_message">No s\'ha trobat cap canvi</string>
   <string name="sync_log_uploading_message">Sincronització completa dels paquets locals</string>
   <string name="sync_log_downloading_message">Sincronització completa del servidor</string>
@@ -277,8 +304,6 @@
   <string name="sync_conflict_remote">Manté la còpia remota</string>
   <string name="sync_conflict_cancel">Cancel·la la sincronització</string>
   <string name="error_reporter_title">Informes d\'error</string>
-  <string name="error_message">Hi ha un error pendent d\'informar</string>
-  <string name="errors_message">Hi ha %d errors pendents d\'informar</string>
   <string name="error_ok">Informa  dels errors</string>
   <string name="error_cancel">No informis dels errors</string>
   <string name="error_reporting_choice">Tipus d\'informes d\'error</string>
@@ -291,11 +316,6 @@
   <string name="widget_minimum_cards_due_notification_ticker_title">Fitxes pendents</string>
   <string name="widget_minimum_cards_due_notification_ticker_text">%d fitxes pendents</string>
   <string name="widget_no_cards_due">No hi ha fitxes pendents</string>
-  <string name="widget_cards_in_decks_due">%1$d %2$s pendents en %3$d %4$s</string>
-  <string name="widget_card">fitxa</string>
-  <string name="widget_cards">fitxes</string>
-  <string name="widget_deck">paquet</string>
-  <string name="widget_decks">Paquets</string>
   <string name="soon">Aviat</string>
   <string name="show_next_review_time">La nova revisió serà</string>
   <string name="show_next_review_time_summ">Mostra l\'hora de la propera revisió en funció de la meva tria</string>
@@ -311,5 +331,46 @@
   <string name="delete_deck_message">Segur que voleu suprimir el paquet %s?</string>
   <string name="delete_deck_confirm">Suprimeix</string>
   <string name="new_version_title">Nova versió:</string>
-  <string name="new_version_text">Noves característiques:\n- síntesi de veu\n- barra de finalització a la pantalla per triar el paquet\n- trieu la plantilla de la fitxa a l\'editor de fitxes\n- nou giny\n- desfés millorat\n- comportament del refés\n- barres de desplaçament\n- més idiomes</string>
+  <string name="new_version_text">New features:\n- card browser\n- statistics\n- text-to-speech\n- deck completion bar on deck picker\n- select card model on fact adder\n- new widget\n- better undo/redo behaviour\n- slider controls\n- more languages</string>
+  <string name="no_tts_available_title">Text-to-Speech</string>
+  <string name="no_tts_available_message">No text-to-speech language available</string>
+  <string name="download_chartdroid_title">Download ChartDroid</string>
+  <string name="download_chartdroid_message">You need to download ChartDroid to display this data.</string>
+  <string name="download_chartdroid_market">Market download</string>
+  <string name="download_chartdroid_web">Web download</string>
+  <string name="statistics_type_title">Chose statistic type</string>
+  <string name="statistics_period_title">Chose report period</string>
+  <string name="statistics_period_y_axis">Cards</string>
+  <string name="statistics_period_x_axis">Days</string>
+  <string name="statistics_period_x_axis_minutes">Minutes</string>
+  <string name="statistics_all_cards">All cards</string>
+  <string name="statistics_mature_cards">Mature cards</string>
+  <plurals name="deckpicker_title">
+    <item quantity="one">Select deck (1 of %2$d due)</item>
+    <item quantity="other">Trieu un paquet (%1$d de %2$d pendents)</item>
+  </plurals>
+  <plurals name="deckpicker_due">
+    <item quantity="one">1 of %2$d due</item>
+    <item quantity="other">%1$d de %2$d pendents</item>
+  </plurals>
+  <plurals name="card_browser_title">
+    <item quantity="one">%1$s: 1 of %3$d cards shown</item>
+    <item quantity="other">%1$s: %2$d of %3$d cards shown</item>
+  </plurals>
+  <plurals name="studyoptions_window_title">
+    <item quantity="one">%1$s (1 of %3$d due)</item>
+    <item quantity="other">%1$s (%2$d de %3$d pendents)</item>
+  </plurals>
+  <plurals name="error_message">
+    <item quantity="one">Hi ha un error pendent d\'informar</item>
+    <item quantity="other">Hi ha %d errors pendents d\'informar</item>
+  </plurals>
+  <plurals name="widget_cards_in_decks_due">
+    <item quantity="one">1 card due in %2$s</item>
+    <item quantity="other">%1$d cards due in %2$s</item>
+  </plurals>
+  <plurals name="widget_decks">
+    <item quantity="one">1 deck</item>
+    <item quantity="other">%1$d decks</item>
+  </plurals>
 </resources>

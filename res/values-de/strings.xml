@@ -26,11 +26,9 @@
   <string name="yes">Ja</string>
   <string name="no">Nein</string>
   <string name="ok">OK</string>
-  <string name="deck_upgrade_too_old_version">Stapel mit einer älteren Version als 39 werden nicht durch AnkiDroid unterstützt. Öffnen Sie den Stapel mit Anki Desktop um ihn auf die neueste Version zu aktualisieren.</string>
+  <string name="deck_upgrade_too_old_version">Stapel mit einer älteren Version als 39 werden nicht durch AnkiDroid unterstützt. Öffnen Sie den Stapel mit Anki-Desktop um ihn auf die neueste Version zu aktualisieren.</string>
   <string name="deck_upgrade_version_61_has_latex">Der Stapel kann nicht voll synchronisiert werden, weil er LaTeX-Ausdrücke enthält; bitte öffnen Sie den Stapel mit der Desktop-Version von Anki, um ihn auf die neueste Version zu aktualisieren und die LaTeX-Ausdrücke neu zu erzeugen.</string>
-  <string name="deckpicker_title">Stapel wählen (%1$d von %2$d fällig)</string>
   <string name="deckpicker_title_nosdcard">SD-Karte ist ausgehängt</string>
-  <string name="deckpicker_due">%1$d von %2$d fällig</string>
   <string name="deckpicker_new">%d neue heute</string>
   <string name="deckpicker_loaddeck">Stapel wird geladen...</string>
   <string name="deckpicker_nodeck">Keine Stapel gefunden.</string>
@@ -155,6 +153,35 @@
   <string name="close">Schließen</string>
   <string name="select_card_model">Kartenvorlage wählen</string>
   <string name="select">Auswählen</string>
+  <string name="card_browser">Kartenübersicht</string>
+  <string name="card_browser_load">Karten werden geladen</string>
+  <string name="card_browser_delete_card">Karte löschen</string>
+  <string name="card_browser_suspend_card">Karte aussetzen</string>
+  <string name="card_browser_unsuspend_card">Aussetzen aufheben</string>
+  <string name="card_browser_mark_card">Karte markieren</string>
+  <string name="card_browser_unmark_card">Markierung aufheben</string>
+  <string name="delete_card_title">Karte löschen</string>
+  <string name="delete_card_message">Diese Karte wirklich löschen?\n%1$s\n%2$s</string>
+  <string name="card_browser_show_marked">Markierte anzeigen</string>
+  <string name="card_browser_show_suspended">Ausgesetzte anzeigen</string>
+  <string name="card_browser_change_display_order">Anzeigereihenfolge</string>
+  <string name="card_browser_change_display_order_title">Anzeigereihenfolge</string>
+  <string name="card_browser_card_details">Kartendetails</string>
+  <string name="card_details_question">Frage</string>
+  <string name="card_details_answer">Antwort</string>
+  <string name="card_details_due">Fällig</string>
+  <string name="card_details_now">Jetzt</string>
+  <string name="card_details_interval">Intervall</string>
+  <string name="card_details_ease">Schwierigkeit</string>
+  <string name="card_details_average_time">Durchschnittszeit</string>
+  <string name="card_details_total_time">Gesamte Zeit</string>
+  <string name="card_details_yes_count">Ja-Antworten</string>
+  <string name="card_details_no_count">Nein-Antworten</string>
+  <string name="card_details_added">Hinzugefügt</string>
+  <string name="card_details_changed">Geändert</string>
+  <string name="card_details_model">Modell</string>
+  <string name="card_details_card_model">Kartenvorlage</string>
+  <string name="statistics">Lernstatistik</string>
   <string name="loading_deck">Stapel wird geladen.\nBitte warten...</string>
   <string name="connection_needed">Sie sind momentan offline.</string>
   <string name="currently_downloading">Wird gerade heruntergeladen</string>
@@ -192,7 +219,6 @@
   <string name="studyoptions_session_questions">Sitzungslimit (Fragen):</string>
   <string name="studyoptions_start">Lernen starten</string>
   <string name="studyoptions_more">Lernoptionen</string>
-  <string name="studyoptions_window_title">%1$s (%2$d von %3$d fällig)</string>
   <string name="studyoptions_more_dialog_title">Lernoptionen</string>
   <string name="studyoptions_more_save">Speichern</string>
   <string name="studyoptions_nodeck_title">Kein Stapel geladen</string>
@@ -261,6 +287,7 @@
   <string name="sync_applying_reply_message">Antworte...</string>
   <string name="sync_no_changes_message">Keine Veränderungen gefunden.</string>
   <string name="sync_log_error_message">Fehler: Deck wurde nicht synchronisiert</string>
+  <string name="sync_log_error_specific">Synchronisierungsfehler: Typ: %1$s, Nachricht: %2$s</string>
   <string name="sync_log_no_changes_message">Keine Veränderungen gefunden</string>
   <string name="sync_log_uploading_message">Voll-Synchronisierung des lokalen Stapels</string>
   <string name="sync_log_downloading_message">Voll-Synchronisierung vom Server</string>
@@ -277,8 +304,6 @@
   <string name="sync_conflict_remote">Server</string>
   <string name="sync_conflict_cancel">Abbrechen</string>
   <string name="error_reporter_title">Fehler-Melder</string>
-  <string name="error_message">Es ist ein Fehler zu melden</string>
-  <string name="errors_message">Es ist %d Fehler zu melden</string>
   <string name="error_ok">Fehlermeldung</string>
   <string name="error_cancel">Melde keine Fehler</string>
   <string name="error_reporting_choice">Fehlermeldungs-Modus</string>
@@ -291,11 +316,6 @@
   <string name="widget_minimum_cards_due_notification_ticker_title">Fällige Karten</string>
   <string name="widget_minimum_cards_due_notification_ticker_text">%d AnkiDroid-Karten fällig</string>
   <string name="widget_no_cards_due">Keine Karten fällig</string>
-  <string name="widget_cards_in_decks_due">%1$d %2$s in %3$d %4$s fällig</string>
-  <string name="widget_card">Karte</string>
-  <string name="widget_cards">Karten</string>
-  <string name="widget_deck">Stapel</string>
-  <string name="widget_decks">Stapeln</string>
   <string name="soon">Bald</string>
   <string name="show_next_review_time">Intervall anzeigen</string>
   <string name="show_next_review_time_summ">Zeigt während des Lernens die Zeit bis zur nächsten Fälligkeit der Karte abhängig von der Wahl des Schwierigkeitsgrades</string>
@@ -311,5 +331,46 @@
   <string name="delete_deck_message">Möchten Sie den Stapel %s wirklich löschen?</string>
   <string name="delete_deck_confirm">Löschen</string>
   <string name="new_version_title">Neue Version:</string>
-  <string name="new_version_text">Neue Funktion:\n- Vorlesefunktion\n- Fortschrittsanzeige in der Stapelauswahl\n- Kartenvorlage kann nun beim Hinzufügen gewählt werden\n- neues Widget\n- verbesserte Rückgängig-Funktion\n- Schieberegler\n- mehr Sprachen</string>
+  <string name="new_version_text">Neue Funktion:\n- Kartenübersicht\n - Statistik\n- Vorlesefunktion\n- Fortschrittsanzeige in der Stapelauswahl\n- Kartenvorlage kann nun beim Hinzufügen gewählt werden\n- neues Widget\n- verbesserte Rückgängig-Funktion\n- Schieberegler\n- mehr Sprachen</string>
+  <string name="no_tts_available_title">Vorlesen</string>
+  <string name="no_tts_available_message">Keine Vorlese-Sprache verfügbar</string>
+  <string name="download_chartdroid_title">ChartDroid herunterladen</string>
+  <string name="download_chartdroid_message">Sie benötigen ChartDroid, um diese Daten anzuzeigen.</string>
+  <string name="download_chartdroid_market">Market</string>
+  <string name="download_chartdroid_web">Internet</string>
+  <string name="statistics_type_title">Statistik-Typ</string>
+  <string name="statistics_period_title">Berichtszeitraum</string>
+  <string name="statistics_period_y_axis">Karten</string>
+  <string name="statistics_period_x_axis">Tage</string>
+  <string name="statistics_period_x_axis_minutes">Minuten</string>
+  <string name="statistics_all_cards">Alle Karten</string>
+  <string name="statistics_mature_cards">Alte Karten</string>
+  <plurals name="deckpicker_title">
+    <item quantity="one">Stapel wählen (1 von %2$d fällig)</item>
+    <item quantity="other">Stapel wählen (%1$d von %2$d fällig)</item>
+  </plurals>
+  <plurals name="deckpicker_due">
+    <item quantity="one">1 von %2$d fällig</item>
+    <item quantity="other">%1$d von %2$d fällig</item>
+  </plurals>
+  <plurals name="card_browser_title">
+    <item quantity="one">%1$s: 1 von %3$d Karten</item>
+    <item quantity="other">%1$s: %2$d von %3$d Karten</item>
+  </plurals>
+  <plurals name="studyoptions_window_title">
+    <item quantity="one">%1$s (1 von %3$d fällig)</item>
+    <item quantity="other">%1$s (%2$d von %3$d fällig)</item>
+  </plurals>
+  <plurals name="error_message">
+    <item quantity="one">Es gibt einen Fehler zu melden</item>
+    <item quantity="other">Es gibt %d Fehler zu melden</item>
+  </plurals>
+  <plurals name="widget_cards_in_decks_due">
+    <item quantity="one">1 Karte in %2$s fällig</item>
+    <item quantity="other">%1$d Karten in %2$s fällig</item>
+  </plurals>
+  <plurals name="widget_decks">
+    <item quantity="one">1 Stapel</item>
+    <item quantity="other">%1$d Stapeln</item>
+  </plurals>
 </resources>

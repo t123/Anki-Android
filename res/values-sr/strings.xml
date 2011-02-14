@@ -28,9 +28,7 @@
   <string name="ok">U redu</string>
   <string name="deck_upgrade_too_old_version">Špilovi sa verzijama koje su starije od 39 nisu podržane sa AnkiDroid programom, molimo vas da špil otvorite sa desktop verzijom Anki programa kako bi mogli da prilagodite špil za najnoviju verziju.</string>
   <string name="deck_upgrade_version_61_has_latex">The deck can\'t be fully upgraded, because it contains LaTeX expressions; please open the deck with Anki desktop to upgrade it to the latest version and regenerate LaTeX.</string>
-  <string name="deckpicker_title">Izaberi špil (%1$d od %2$d na redu)</string>
   <string name="deckpicker_title_nosdcard">SD kartica nije montirana</string>
-  <string name="deckpicker_due">%1$d od %2$d sledi</string>
   <string name="deckpicker_new">%d novih danas</string>
   <string name="deckpicker_loaddeck">Učitavanje špila...</string>
   <string name="deckpicker_nodeck">Nijedan špil nije pronađen.</string>
@@ -155,6 +153,35 @@
   <string name="close">Zatvori</string>
   <string name="select_card_model">Select Card Model</string>
   <string name="select">Select</string>
+  <string name="card_browser">Card Browser</string>
+  <string name="card_browser_load">Loading cards</string>
+  <string name="card_browser_delete_card">Delete card</string>
+  <string name="card_browser_suspend_card">Suspend card</string>
+  <string name="card_browser_unsuspend_card">Unsuspend card</string>
+  <string name="card_browser_mark_card">Mark card</string>
+  <string name="card_browser_unmark_card">Unmark card</string>
+  <string name="delete_card_title">Delete Card</string>
+  <string name="delete_card_message">Really delete this card?\n%1$s\n%2$s</string>
+  <string name="card_browser_show_marked">Show marked cards</string>
+  <string name="card_browser_show_suspended">Show suspended cards</string>
+  <string name="card_browser_change_display_order">Change display order</string>
+  <string name="card_browser_change_display_order_title">Choose display order</string>
+  <string name="card_browser_card_details">Card details</string>
+  <string name="card_details_question">Question</string>
+  <string name="card_details_answer">Answer</string>
+  <string name="card_details_due">Due</string>
+  <string name="card_details_now">Now</string>
+  <string name="card_details_interval">Interval</string>
+  <string name="card_details_ease">Ease</string>
+  <string name="card_details_average_time">Average time</string>
+  <string name="card_details_total_time">Total time</string>
+  <string name="card_details_yes_count">Yes count</string>
+  <string name="card_details_no_count">No count</string>
+  <string name="card_details_added">Added</string>
+  <string name="card_details_changed">Changed</string>
+  <string name="card_details_model">Model</string>
+  <string name="card_details_card_model">Card model</string>
+  <string name="statistics">Statistics</string>
   <string name="loading_deck">Špil se učitava. Molimo sačekajte...</string>
   <string name="connection_needed">Nema internet konekcije</string>
   <string name="currently_downloading">Trenutno se preuzima</string>
@@ -192,7 +219,6 @@
   <string name="studyoptions_session_questions">Granica sesije (pitanja):</string>
   <string name="studyoptions_start">Počni Pregled</string>
   <string name="studyoptions_more">Opcije za Učenje</string>
-  <string name="studyoptions_window_title">%1$s (%2$d od %3$d na redu)</string>
   <string name="studyoptions_more_dialog_title">Više Opcija</string>
   <string name="studyoptions_more_save">Sačuvaj</string>
   <string name="studyoptions_nodeck_title">Nijedan Špil nije Učitan</string>
@@ -255,12 +281,13 @@
   <string name="sync_preparing_full_sync_message">Pripremanje pune sinhronizacije...</string>
   <string name="sync_uploading_message">Otpremanje...</string>
   <string name="sync_downloading_message">Preuzimanje u toku...</string>
-  <string name="sync_complete_message">Sinhronizacija završena.</string>
+  <string name="sync_complete_message">Closing...</string>
   <string name="sync_determining_differences_message">Utvrđivanje razlika...</string>
   <string name="sync_transferring_payload_message">Prebacivanje tereta...</string>
   <string name="sync_applying_reply_message">Primena odgovora...</string>
   <string name="sync_no_changes_message">Nema promena.</string>
   <string name="sync_log_error_message">Greška: Špil nije sinhronizovan</string>
+  <string name="sync_log_error_specific">Syncing error, type: %1$s, message: %2$s</string>
   <string name="sync_log_no_changes_message">Nema promena</string>
   <string name="sync_log_uploading_message">Puna sinhronizacija sa lokalnih špilova</string>
   <string name="sync_log_downloading_message">Puna sinhronizacija sa serverom</string>
@@ -277,8 +304,6 @@
   <string name="sync_conflict_remote">Sačuvaj Verziju na Serveru</string>
   <string name="sync_conflict_cancel">Odustani od Sinhronizovanja</string>
   <string name="error_reporter_title">Error Reporter</string>
-  <string name="error_message">Postoji jedna greška za prijaviti</string>
-  <string name="errors_message">%d grešaka za prijaviti</string>
   <string name="error_ok">Prijavljuj greške</string>
   <string name="error_cancel">Ne prijavljuj greške</string>
   <string name="error_reporting_choice">Prijavljivanje grešaka</string>
@@ -291,11 +316,6 @@
   <string name="widget_minimum_cards_due_notification_ticker_title">Kartice za Pregled</string>
   <string name="widget_minimum_cards_due_notification_ticker_text">%d AnkiDroid kartica za pregled</string>
   <string name="widget_no_cards_due">No cards due</string>
-  <string name="widget_cards_in_decks_due">%1$d %2$s due in %3$d %4$s</string>
-  <string name="widget_card">card</string>
-  <string name="widget_cards">cards</string>
-  <string name="widget_deck">deck</string>
-  <string name="widget_decks">decks</string>
   <string name="soon">Uskoro</string>
   <string name="show_next_review_time">Vreme sledećeg pregleda</string>
   <string name="show_next_review_time_summ">Prikazuje vreme sledećeg pregleda u zavisnosti od vašeg izbora</string>
@@ -311,5 +331,46 @@
   <string name="delete_deck_message">Da li zaista želite da izbrišete špil %s?</string>
   <string name="delete_deck_confirm">Izbriši</string>
   <string name="new_version_title">New Version:</string>
-  <string name="new_version_text">New features:\n- text-to-speech\n- deck completion bar on deck picker\n- select card model on fact adder\n- new widget\n- better undo/redo behaviour\n- slider controls\n- more languages</string>
+  <string name="new_version_text">New features:\n- card browser\n- statistics\n- text-to-speech\n- deck completion bar on deck picker\n- select card model on fact adder\n- new widget\n- better undo/redo behaviour\n- slider controls\n- more languages</string>
+  <string name="no_tts_available_title">Text-to-Speech</string>
+  <string name="no_tts_available_message">No text-to-speech language available</string>
+  <string name="download_chartdroid_title">Download ChartDroid</string>
+  <string name="download_chartdroid_message">You need to download ChartDroid to display this data.</string>
+  <string name="download_chartdroid_market">Market download</string>
+  <string name="download_chartdroid_web">Web download</string>
+  <string name="statistics_type_title">Chose statistic type</string>
+  <string name="statistics_period_title">Chose report period</string>
+  <string name="statistics_period_y_axis">Cards</string>
+  <string name="statistics_period_x_axis">Days</string>
+  <string name="statistics_period_x_axis_minutes">Minutes</string>
+  <string name="statistics_all_cards">All cards</string>
+  <string name="statistics_mature_cards">Mature cards</string>
+  <plurals name="deckpicker_title">
+    <item quantity="one">Select deck (1 of %2$d due)</item>
+    <item quantity="other">Izaberi špil (%1$d od %2$d na redu)</item>
+  </plurals>
+  <plurals name="deckpicker_due">
+    <item quantity="one">1 of %2$d due</item>
+    <item quantity="other">%1$d od %2$d sledi</item>
+  </plurals>
+  <plurals name="card_browser_title">
+    <item quantity="one">%1$s: 1 of %3$d cards shown</item>
+    <item quantity="other">%1$s: %2$d of %3$d cards shown</item>
+  </plurals>
+  <plurals name="studyoptions_window_title">
+    <item quantity="one">%1$s (1 of %3$d due)</item>
+    <item quantity="other">%1$s (%2$d od %3$d na redu)</item>
+  </plurals>
+  <plurals name="error_message">
+    <item quantity="one">Postoji jedna greška za prijaviti</item>
+    <item quantity="other">%d grešaka za prijaviti</item>
+  </plurals>
+  <plurals name="widget_cards_in_decks_due">
+    <item quantity="one">1 card due in %2$s</item>
+    <item quantity="other">%1$d cards due in %2$s</item>
+  </plurals>
+  <plurals name="widget_decks">
+    <item quantity="one">1 deck</item>
+    <item quantity="other">%1$d decks</item>
+  </plurals>
 </resources>

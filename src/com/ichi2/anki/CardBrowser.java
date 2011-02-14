@@ -34,6 +34,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -47,12 +48,19 @@ import java.util.HashMap;
 public class CardBrowser extends Activity {
     private ArrayList<HashMap<String, String>> mCards;
     private ArrayList<HashMap<String, String>> mAllCards;
+    private ArrayList<HashMap<String, String>> mDeletedCards;
     private ListView mCardsListView;
     private SimpleAdapter mCardsAdapter;
     private EditText mSearchEditText;
     
+    private AlertDialog mSelectOrderDialog;
+    private AlertDialog mDetailsDialog;
+    private WebView mAboutWebView;
     private ProgressDialog mProgressDialog;
-    private  Card mSelectedCard;
+    private boolean mUndoRedoDialogShowing = false;
+    private Card mSelectedCard;
+    private Card mUndoRedoCard;
+    private long mUndoRedoCardId;
     private static Card sEditorCard;
     private boolean mIsSuspended;
     private boolean mIsMarked;
@@ -62,23 +70,33 @@ public class CardBrowser extends Activity {
     private static final int CONTEXT_MENU_MARK = 0;
     private static final int CONTEXT_MENU_SUSPEND = 1;
     private static final int CONTEXT_MENU_DELETE = 2;
+    private static final int CONTEXT_MENU_DETAILS = 3;
 
     private static final int MENU_UNDO = 0;
     private static final int MENU_REDO = 1;
+    private static final int MENU_ADD_FACT = 2;
+    private static final int MENU_SHOW_MARKED = 3;
+    private static final int MENU_SHOW_SUSPENDED = 4;
+    private static final int MENU_CHANGE_ORDER = 5;
 
     private static final int EDIT_CARD = 0;
-    
+    private static final int ADD_FACT = 1;
+        
     private int markedColor;
     private int suspendedColor;
     private int backgroundColor;
 
+    private boolean mShowOnlyMarSus = false;
 
+    private int mSelectedOrder = 0;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.card_browser);
         mDeck = AnkiDroidApp.deck();
+        mDeck.resetUndo();
 
         markedColor = getResources().getColor(R.color.card_browser_marked);
         suspendedColor = getResources().getColor(R.color.card_browser_suspended);
@@ -116,8 +134,7 @@ public class CardBrowser extends Activity {
                 mPositionInCardsList = position;
                 mSelectedCard = mDeck.cardFromId(Long.parseLong(mCards.get(mPositionInCardsList).get("id")));
                 sEditorCard = mSelectedCard;
-                editCard.putExtra("callfromcardbrowser", true);
-                
+                editCard.putExtra("callfromcardbrowser", true);                
                 startActivityForResult(editCard, EDIT_CARD);
                 if (Integer.valueOf(android.os.Build.VERSION.SDK) > 4) {
                     MyAnimation.slide(CardBrowser.this, MyAnimation.LEFT);
@@ -129,14 +146,7 @@ public class CardBrowser extends Activity {
         mSearchEditText = (EditText) findViewById(R.id.card_browser_search);
         mSearchEditText.addTextChangedListener(new TextWatcher() {
             public void afterTextChanged(Editable s) {
-                mCards.clear();
-            	for (int i = 0; i < mAllCards.size(); i++) {
-                    if (mAllCards.get(i).get("question").toLowerCase().indexOf(mSearchEditText.getText().toString().toLowerCase()) != -1 ||
-                    		mAllCards.get(i).get("answer").toLowerCase().indexOf(mSearchEditText.getText().toString().toLowerCase()) != -1) { 
-                    	mCards.add(mAllCards.get(i));
-                    }
-                }
-            	updateList();
+                updateCardsList();
             }
             public void beforeTextChanged(CharSequence s, int start, int count, int after){}
             public void onTextChanged(CharSequence s, int start, int before, int count){}
@@ -145,7 +155,9 @@ public class CardBrowser extends Activity {
         
         setTitle(mDeck.getDeckName());
 
-        getCards(Deck.ORDER_BY_ANSWER);
+        initAllDialogs();
+
+        getCards();
     }
 
 
@@ -174,6 +186,7 @@ public class CardBrowser extends Activity {
             mIsSuspended = false;
         }
         item = menu.add(Menu.NONE, CONTEXT_MENU_DELETE, Menu.NONE, res.getString(R.string.card_browser_delete_card));
+        item = menu.add(Menu.NONE, CONTEXT_MENU_DETAILS, Menu.NONE, res.getString(R.string.card_browser_card_details));
         menu.setHeaderTitle(mCards.get(selectedPosition).get("question"));
     }
 
@@ -211,6 +224,10 @@ public class CardBrowser extends Activity {
             dialog = builder.create();
             dialog.show();
             return true;
+        case CONTEXT_MENU_DETAILS:
+        	mAboutWebView.loadDataWithBaseURL("", mSelectedCard.getCardDetails(this), "text/html", "utf-8", null);
+        	mDetailsDialog.show();
+        	return true;
         default:
             return super.onContextItemSelected(item);
         }
@@ -221,10 +238,14 @@ public class CardBrowser extends Activity {
     public boolean onKeyDown(int keyCode, KeyEvent event)  {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
             Log.i(AnkiDroidApp.TAG, "CardBrowser - onBackPressed()");
-            setResult(RESULT_OK);
-            finish();
-            if (Integer.valueOf(android.os.Build.VERSION.SDK) > 4) {
-                MyAnimation.slide(CardBrowser.this, MyAnimation.RIGHT);
+            if (mSearchEditText.getText().length() == 0 && !mShowOnlyMarSus) {
+                setResult(RESULT_OK);
+                finish();
+                if (Integer.valueOf(android.os.Build.VERSION.SDK) > 4) {
+                    MyAnimation.slide(CardBrowser.this, MyAnimation.RIGHT);
+                }                
+            } else {
+                mSearchEditText.setText("");
             }
             return true;
         }
@@ -240,6 +261,14 @@ public class CardBrowser extends Activity {
         item.setIcon(R.drawable.ic_menu_revert);
         item = menu.add(Menu.NONE, MENU_REDO, Menu.NONE, R.string.redo);
         item.setIcon(R.drawable.ic_menu_redo);          
+        item = menu.add(Menu.NONE, MENU_ADD_FACT, Menu.NONE, R.string.add);
+        item.setIcon(R.drawable.ic_menu_add);          
+        item = menu.add(Menu.NONE, MENU_CHANGE_ORDER, Menu.NONE, R.string.card_browser_change_display_order);
+        item.setIcon(R.drawable.ic_menu_sort_by_size);
+        item = menu.add(Menu.NONE, MENU_SHOW_MARKED, Menu.NONE, R.string.card_browser_show_marked);
+        item.setIcon(R.drawable.ic_menu_star_on);          
+        item = menu.add(Menu.NONE, MENU_SHOW_SUSPENDED, Menu.NONE, R.string.card_browser_show_suspended);
+        item.setIcon(R.drawable.ic_menu_close_clear_cancel);
         return true;
     }
 
@@ -256,13 +285,47 @@ public class CardBrowser extends Activity {
         switch (item.getItemId()) {
             case MENU_UNDO:
                 DeckTask.launchDeckTask(DeckTask.TASK_TYPE_UNDO, mUndoRedoHandler, new DeckTask.TaskData(0,
-                        mDeck, mSelectedCard));
+                        mDeck, 0, true));
                 return true;
-
             case MENU_REDO:
                 DeckTask.launchDeckTask(DeckTask.TASK_TYPE_REDO, mUndoRedoHandler, new DeckTask.TaskData(0,
-                        mDeck, mSelectedCard));
+                        mDeck, 0, true));
                 return true;
+            case MENU_ADD_FACT:
+            	startActivityForResult(new Intent(CardBrowser.this, FactAdder.class), ADD_FACT);
+                if (Integer.valueOf(android.os.Build.VERSION.SDK) > 4) {
+                    MyAnimation.slide(CardBrowser.this, MyAnimation.LEFT);
+                }
+                return true;
+            case MENU_SHOW_MARKED:
+            	mShowOnlyMarSus = true;
+            	mSearchEditText.setHint(R.string.card_browser_show_marked);
+            	mCards.clear();
+                for (int i = 0; i < mAllCards.size(); i++) {
+                    if ((mAllCards.get(i).get("question").toLowerCase().indexOf(mSearchEditText.getText().toString().toLowerCase()) != -1 ||
+                        mAllCards.get(i).get("answer").toLowerCase().indexOf(mSearchEditText.getText().toString().toLowerCase()) != -1) &&
+                        mAllCards.get(i).get("marSus").subSequence(0, 1).equals("1")) { 
+                        mCards.add(mAllCards.get(i));
+                    }
+                }                    
+                updateList();
+                return true;
+            case MENU_SHOW_SUSPENDED:
+            	mShowOnlyMarSus = true;
+            	mSearchEditText.setHint(R.string.card_browser_show_suspended);
+            	mCards.clear();
+                for (int i = 0; i < mAllCards.size(); i++) {
+                    if ((mAllCards.get(i).get("question").toLowerCase().indexOf(mSearchEditText.getText().toString().toLowerCase()) != -1 ||
+                        mAllCards.get(i).get("answer").toLowerCase().indexOf(mSearchEditText.getText().toString().toLowerCase()) != -1) &&
+                        mAllCards.get(i).get("marSus").subSequence(1, 2).equals("1")) { 
+                        mCards.add(mAllCards.get(i));
+                    }
+                }                    
+                updateList();
+            	return true;
+            case MENU_CHANGE_ORDER:
+            	mSelectOrderDialog.show();
+            	return true;
         }
         return false;
     }
@@ -277,12 +340,56 @@ public class CardBrowser extends Activity {
             DeckTask.launchDeckTask(DeckTask.TASK_TYPE_UPDATE_FACT, mUpdateCardHandler, new DeckTask.TaskData(0,
                     mDeck, mSelectedCard));
             // TODO: code to save the changes made to the current card.
+        } else if (requestCode == ADD_FACT && resultCode == RESULT_OK) {
+        	getCards();
         }
     }
 
 
-    private void getCards(String order) {
-        DeckTask.launchDeckTask(DeckTask.TASK_TYPE_LOAD_CARDS, mLoadCardsHandler, new DeckTask.TaskData(mDeck, order));
+    private void initAllDialogs() {
+        Resources res = getResources();
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setTitle(res.getString(R.string.card_browser_change_display_order_title));
+        builder.setIcon(android.R.drawable.ic_menu_sort_by_size);
+        builder.setSingleChoiceItems(getResources().getStringArray(R.array.card_browser_order_labels), mSelectedOrder, new DialogInterface.OnClickListener() {
+        		public void onClick(DialogInterface dialog, int whichButton) {
+        			mSelectedOrder = whichButton;
+        	    	mSelectOrderDialog.dismiss();
+        	    	getCards();
+        		}
+        	});
+        mSelectOrderDialog = builder.create();
+
+		builder.setPositiveButton(getResources().getString(R.string.ok), null);
+        View contentView = getLayoutInflater().inflate(R.layout.about, null);
+        mAboutWebView = (WebView) contentView.findViewById(R.id.about);
+        mAboutWebView.setBackgroundColor(res.getColor(R.color.card_browser_background));
+        builder.setView(contentView);
+		mDetailsDialog = builder.create(); 
+    }
+
+
+    private void updateCardsList() {
+    	mShowOnlyMarSus = false;
+    	mSearchEditText.setHint(R.string.downloaddeck_search);
+    	mCards.clear();
+        if (mSearchEditText.getText().length() == 0) {
+            mCards.addAll(mAllCards);
+        } else {
+            for (int i = 0; i < mAllCards.size(); i++) {
+                if (mAllCards.get(i).get("question").toLowerCase().indexOf(mSearchEditText.getText().toString().toLowerCase()) != -1 ||
+                    mAllCards.get(i).get("answer").toLowerCase().indexOf(mSearchEditText.getText().toString().toLowerCase()) != -1) { 
+                    mCards.add(mAllCards.get(i));
+                }
+            }                    
+        }
+        updateList();
+    }
+
+
+    private void getCards() {
+        DeckTask.launchDeckTask(DeckTask.TASK_TYPE_LOAD_CARDS, mLoadCardsHandler, new DeckTask.TaskData(mDeck, getResources().getStringArray(R.array.card_browser_order_values)[mSelectedOrder]));
     }
     
     
@@ -293,15 +400,104 @@ public class CardBrowser extends Activity {
 
     private void updateList() {
         mCardsAdapter.notifyDataSetChanged();
-        setTitle(String.format(getResources().getString(R.string.card_browser_title), mDeck.getDeckName(), mCards.size(), mAllCards.size()));
+        int count = mCards.size();
+        setTitle(getResources().getQuantityString(R.plurals.card_browser_title, count, mDeck.getDeckName(), count, mAllCards.size()));
     }
 
 
-    DeckTask.TaskListener mLoadCardsHandler = new DeckTask.TaskListener() {
+    private int getPosition(ArrayList<HashMap<String, String>> list, long cardId) {
+        String cardid = Long.toString(cardId);
+        for (int i = 0; i < list.size(); i++) {
+            if (list.get(i).get("id").equals(cardid)) {
+                return i;
+			}
+        }
+        return -1;
+    }
+
+
+    private void updateCard(Card card, ArrayList<HashMap<String, String>> list, int position) {
+    	list.get(position).put("question", Utils.stripHTML(card.getQuestion()));
+    	list.get(position).put("answer", Utils.stripHTML(card.getAnswer()));
+    }
+
+
+    private void markCards(long factId, boolean mark) {
+        for (long cardId : mDeck.getCardsFromFactId(factId)) {
+            int positionC = getPosition(mCards, cardId);
+            int positionA = getPosition(mAllCards, cardId);
+            String marSus = mAllCards.get(positionA).get("marSus");
+            if (mark) {
+                marSus = "1" + marSus.substring(1,2);
+                if (positionC != -1) {
+                    mCards.get(positionC).put("marSus", marSus);                    
+                }
+                mAllCards.get(positionA).put("marSus", marSus);
+            } else {
+                marSus = "0" + marSus.substring(1,2);
+                if (positionC != -1) {
+                    mCards.get(positionC).put("marSus", marSus);                    
+                }
+                mAllCards.get(positionA).put("marSus", marSus);
+            }            
+        }
+        updateList();
+    }
+
+
+	private void suspendCard(Card card, int position, boolean suspend) {
+        int posA = getPosition(mAllCards, card.getId());
+        String marSus = mAllCards.get(posA).remove("marSus");
+        if (suspend) {
+            marSus = marSus.substring(0,1) + "1";
+            if (position != -1) {
+                mCards.get(position).put("marSus", marSus);                
+            }
+            mAllCards.get(posA).put("marSus", marSus);
+        } else {
+            marSus = marSus.substring(0,1) + "0";
+            if (position != -1) {
+                mCards.get(position).put("marSus", marSus);                
+            }
+            mAllCards.get(posA).put("marSus", marSus);
+        }
+        updateList();
+    }
+
+
+    private void deleteCard(String cardId, int position) {
+        if (mDeletedCards == null) {
+            mDeletedCards = new ArrayList<HashMap<String, String>>();
+        }
+        HashMap<String, String> data = new HashMap<String, String>();
+        for (int i = 0; i < mAllCards.size(); i++) {
+            if (mAllCards.get(i).get("id").equals(cardId)) {
+                data.put("id", mAllCards.get(i).get("id"));
+                data.put("question", mAllCards.get(i).get("question"));
+                data.put("answer", mAllCards.get(i).get("answer"));
+                data.put("marSus", mAllCards.get(i).get("marSus"));
+                data.put("allCardPos", Integer.toString(i));
+                mDeletedCards.add(data);
+                mAllCards.remove(i);
+                Log.i(AnkiDroidApp.TAG, "Remove card from list");
+                break;
+            }
+        }
+        mCards.remove(position);
+        updateList();
+    }
+
+
+    private DeckTask.TaskListener mLoadCardsHandler = new DeckTask.TaskListener() {
 
         @Override
         public void onPreExecute() {
-            mProgressDialog = ProgressDialog.show(CardBrowser.this, "", getResources().getString(R.string.card_browser_load), true);
+            if (!mUndoRedoDialogShowing) {
+                mProgressDialog = ProgressDialog.show(CardBrowser.this, "", getResources().getString(R.string.card_browser_load), true);                
+            } else {
+                mProgressDialog.setMessage(getResources().getString(R.string.card_browser_load));
+                mUndoRedoDialogShowing = false;
+            }
         }
 
 
@@ -351,14 +547,7 @@ public class CardBrowser extends Activity {
         @Override
         public void onProgressUpdate(DeckTask.TaskData... values) {
             mSelectedCard = values[0].getCard();
-            if (mIsMarked) {
-                String marSus = mCards.get(mPositionInCardsList).remove("marSus");
-                mCards.get(mPositionInCardsList).put("marSus", "0" + marSus.substring(1,2));
-            } else {
-                String marSus = mCards.get(mPositionInCardsList).remove("marSus");
-                mCards.get(mPositionInCardsList).put("marSus", "1" + marSus.substring(1,2));
-            }
-            updateList();
+            markCards(mSelectedCard.getFactId(), !mIsMarked);
         }
 
 
@@ -380,20 +569,12 @@ public class CardBrowser extends Activity {
 
         @Override
         public void onProgressUpdate(DeckTask.TaskData... values) {
-            if (mIsSuspended) {
-                String marSus = mCards.get(mPositionInCardsList).remove("marSus");
-                mCards.get(mPositionInCardsList).put("marSus", marSus.substring(0,1) + "0");
-            } else {
-                String marSus = mCards.get(mPositionInCardsList).remove("marSus");
-                mCards.get(mPositionInCardsList).put("marSus", marSus.substring(0,1) + "1");
-            }
-            updateList();
+        	suspendCard(mSelectedCard, mPositionInCardsList, !mIsSuspended);
         }
 
         @Override
         public void onPostExecute(DeckTask.TaskData result) {
             mProgressDialog.dismiss();
-
         }
     };
 
@@ -408,15 +589,7 @@ public class CardBrowser extends Activity {
 
         @Override
         public void onProgressUpdate(DeckTask.TaskData... values) {
-            
-            for (int i = 0; i < mAllCards.size(); i++) {
-                if (mAllCards.get(i).get("id").equals(values[0].getString())) {
-                    mAllCards.remove(i);
-                    Log.i(AnkiDroidApp.TAG, "Remove card from list");
-                }
-            }
-            mCards.remove(mPositionInCardsList);
-            updateList();
+            deleteCard(values[0].getString(), mPositionInCardsList);
         }
 
 
@@ -438,14 +611,51 @@ public class CardBrowser extends Activity {
 
         @Override
         public void onProgressUpdate(DeckTask.TaskData... values) {
-            mSelectedCard = values[0].getCard();
         }
 
 
         @Override
         public void onPostExecute(DeckTask.TaskData result) {
-            //mProgressDialog.dismiss();
-            getCards(Deck.ORDER_BY_ANSWER);
+        	mUndoRedoCardId = result.getLong();
+        	String undoType = result.getString();
+        	if (undoType.equals(Deck.UNDO_TYPE_DELETE_CARD)) {
+                int position = getPosition(mDeletedCards, mUndoRedoCardId);
+                if (position != -1) {
+                    HashMap<String, String> data = new HashMap<String, String>();
+                    data.put("id", mDeletedCards.get(position).get("id"));
+                    data.put("question", mDeletedCards.get(position).get("question"));
+                    data.put("answer", mDeletedCards.get(position).get("answer"));
+                    data.put("marSus", mDeletedCards.get(position).get("marSus"));
+                    mAllCards.add(Integer.parseInt(mDeletedCards.get(position).get("allCardPos")), data);
+                    mDeletedCards.remove(position);
+                    updateCardsList();
+                } else {
+                    deleteCard(Long.toString(mUndoRedoCardId), getPosition(mCards, mUndoRedoCardId));
+                }                    
+                mProgressDialog.dismiss();
+            } else {
+            	mUndoRedoCard = mDeck.cardFromId(mUndoRedoCardId);
+            	if (undoType.equals(Deck.UNDO_TYPE_EDIT_CARD)) {
+                	mUndoRedoCard.fromDB(mUndoRedoCardId);
+                    int pos = getPosition(mAllCards, mUndoRedoCardId);
+                    updateCard(mUndoRedoCard, mAllCards, pos);                    
+                    pos = getPosition(mCards, mUndoRedoCardId);
+                    if (pos != -1) {
+                        updateCard(mUndoRedoCard, mCards, pos);                    
+                    }
+                    updateList();
+                	mProgressDialog.dismiss();
+                } else if (undoType.equals(Deck.UNDO_TYPE_MARK_CARD)) {
+                	markCards(mUndoRedoCard.getFactId(), mUndoRedoCard.isMarked());
+                	mProgressDialog.dismiss();
+                } else if (undoType.equals(Deck.UNDO_TYPE_SUSPEND_CARD)) {
+                	suspendCard(mUndoRedoCard, getPosition(mCards, mUndoRedoCardId), mUndoRedoCard.getSuspendedState());
+                	mProgressDialog.dismiss();
+                } else {
+                    mUndoRedoDialogShowing = true;
+                    getCards();
+                }
+            }
         }
     };
 
@@ -459,14 +669,12 @@ public class CardBrowser extends Activity {
 
         @Override
         public void onProgressUpdate(DeckTask.TaskData... values) {
-          mSelectedCard.fromDB(mSelectedCard.getId());
-            mCards.get(mPositionInCardsList).put("question", Utils.stripHTML(mSelectedCard.getQuestion()));
-            mCards.get(mPositionInCardsList).put("answer", Utils.stripHTML(mSelectedCard.getAnswer()));
-            for (int i = 0; i < mAllCards.size(); i++) {
-                if (mAllCards.get(i).get("id").equals(mSelectedCard.getId())) {
-                    mAllCards.get(mPositionInCardsList).put("question", Utils.stripHTML(mSelectedCard.getQuestion()));
-                    mAllCards.get(mPositionInCardsList).put("answer", Utils.stripHTML(mSelectedCard.getAnswer()));
-                }
+            mSelectedCard.fromDB(mSelectedCard.getId());
+            int pos = getPosition(mAllCards, mSelectedCard.getId());
+            updateCard(mSelectedCard, mAllCards, pos);                    
+            pos = getPosition(mCards, mSelectedCard.getId());
+            if (pos != -1) {
+                updateCard(mSelectedCard, mCards, pos);                    
             }
             updateList();
         }

@@ -20,7 +20,7 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	package="com.ichi2.anki"
-	android:versionName="0.6alpha1"
+	android:versionName="0.6alpha2"
 	android:versionCode="18"
 	>
 	<application android:label="@string/app_name" android:icon="@drawable/anki" android:name="AnkiDroidApp" android:debuggable="true">
@@ -107,7 +107,10 @@
 			</intent-filter>
 			<meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_provider" />
 		</receiver>
-	
+		<!-- Content Provider to deliver statistic-data to ChartDroid-->
+		<provider android:label="statistics_provider"
+       		android:name="com.ichi2.chartdroid.provider.DataContentProvider"
+           	android:authorities="com.ichi2.chartdroid.provider"/>
 		<!-- Service to perform web API queries -->
 		<service android:name=".AnkiDroidWidget$UpdateService" />
 </application>

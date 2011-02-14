@@ -22,6 +22,8 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.text.Html;
+import android.text.format.DateFormat;
+import android.text.format.Time;
 import android.util.Log;
 
 import com.mindprod.common11.BigDate;
@@ -30,6 +32,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
@@ -308,33 +311,28 @@ public class Utils {
 
     /**
      * Utility method to write to a file.
+     * Throws the exception, so we can report it in syncing log
+     * @throws IOException 
      */
-    public static boolean writeToFile(InputStream source, String destination) {
-        try {
-            Log.i(AnkiDroidApp.TAG, "Creating new file... = " + destination);
-            new File(destination).createNewFile();
+    public static void writeToFile(InputStream source, String destination) throws IOException {
+        Log.i(AnkiDroidApp.TAG, "Creating new file... = " + destination);
+        new File(destination).createNewFile();
 
-            OutputStream output = new FileOutputStream(destination);
+        OutputStream output = new BufferedOutputStream(new FileOutputStream(destination));
 
-            // Transfer bytes, from source to destination.
-            byte[] buf = new byte[CHUNK_SIZE];
-            int len;
-            if (source == null) {
-                Log.i(AnkiDroidApp.TAG, "source is null!");
-            }
-            while ((len = source.read(buf)) > 0) {
-                output.write(buf, 0, len);
-                Log.i(AnkiDroidApp.TAG, "Write...");
-            }
-
-            Log.i(AnkiDroidApp.TAG, "Finished writing!");
-            output.close();
-
-        } catch (Exception e) {
-            Log.e(AnkiDroidApp.TAG, e.getMessage());
-            return false;
+        // Transfer bytes, from source to destination.
+        byte[] buf = new byte[CHUNK_SIZE];
+        int len;
+        if (source == null) {
+            Log.i(AnkiDroidApp.TAG, "source is null!");
         }
-        return true;
+        while ((len = source.read(buf)) > 0) {
+            output.write(buf, 0, len);
+            Log.i(AnkiDroidApp.TAG, "Write...");
+        }
+
+        Log.i(AnkiDroidApp.TAG, "Finished writing!");
+        output.close();
     }
 
 
@@ -425,6 +423,57 @@ public class Utils {
     }
 
 
+    public static String getReadableInterval(Context context, double numberOfDays) {
+    	return getReadableInterval(context, numberOfDays, false);
+    }
+
+
+    public static String getReadableInterval(Context context, double numberOfDays, boolean inFormat) {
+    	double adjustedInterval;
+    	int type;
+    	if (numberOfDays < 1) {
+    		// hours
+    		adjustedInterval = Math.max(1, Math.round(numberOfDays * 24));
+    		type = 0;
+    	} else if (numberOfDays < 30) {
+    		// days
+    		adjustedInterval = Math.round(numberOfDays);
+    		type = 1;
+    	} else if (numberOfDays < 360) {
+    		// months
+    		adjustedInterval = Math.round(numberOfDays / 3);
+    		adjustedInterval /= 10;
+    		type = 2;
+    	} else {
+    		// years
+    		adjustedInterval = Math.round(numberOfDays / 36.5);
+			adjustedInterval /= 10;
+    		type = 3;
+    	}
+   		if (!inFormat) {
+   	    	if (adjustedInterval == 1){
+   	       		return formatDouble(type, adjustedInterval) + " " + context.getResources().getStringArray(R.array.next_review_s)[type];
+   	       	} else {
+   	   			return formatDouble(type, adjustedInterval) + " " + context.getResources().getStringArray(R.array.next_review_p)[type];
+   	    	}   			
+   		} else {
+   	    	if (adjustedInterval == 1){
+   	       		return String.format(context.getResources().getStringArray(R.array.next_review_in_s)[type], formatDouble(type, adjustedInterval));       			       			
+   	       	} else {
+   	   			return String.format(context.getResources().getStringArray(R.array.next_review_in_p)[type], formatDouble(type, adjustedInterval));
+   	    	}   			
+   		}
+    }
+
+
+    private static String formatDouble(int type, double adjustedInterval) {
+    	if (type == 0 || (adjustedInterval * 10) % 10 == 0){
+			return String.valueOf((int) adjustedInterval);        			   			
+    	} else {
+       		return String.valueOf(adjustedInterval); 	
+		}
+    }
+
     /**
      *  Returns the effective date of the present moment.
      *  If the time is prior the cut-off time (9:00am by default as of 11/02/10) return yesterday,
@@ -443,6 +492,20 @@ public class Utils {
         cal.setTimeInMillis(System.currentTimeMillis() - (long) utcOffset * 1000l);
         Date today = Date.valueOf(df.format(cal.getTime()));
         return today;
+    }
+
+
+    public static String doubleToTime(double value) {
+    	int time = (int) Math.round(value);
+    	int seconds = time % 60;
+    	int minutes = (time - seconds) / 60;
+    	String formattedTime;
+    	if (seconds < 10) {
+    		formattedTime = Integer.toString(minutes) + ":0" + Integer.toString(seconds);
+    	} else {
+    		formattedTime = Integer.toString(minutes) + ":" + Integer.toString(seconds);
+    	}
+    	return formattedTime;
     }
 
 

@@ -34,6 +34,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -77,11 +78,15 @@ public class Deck {
     private static final double MINIMUM_AVERAGE = 1.7;
     private static final double MAX_SCHEDULE_TIME = 36500.0;
     
-    public static final String ORDER_BY_QUESTION = "question";
-    public static final String ORDER_BY_ANSWER = "answer";
-    public static final String ORDER_BY_DUE = "combinedDue";
-    public static final String ORDER_BY_INTERVAL = "interval";
-    public static final String ORDER_BY_EASE = "factor";
+    public static final String UNDO_TYPE_ANSWER_CARD = "Answer Card";
+    public static final String UNDO_TYPE_SUSPEND_CARD = "Suspend Card";
+    public static final String UNDO_TYPE_EDIT_CARD = "Edit Card";
+    public static final String UNDO_TYPE_MARK_CARD = "Mark Card";
+    public static final String UNDO_TYPE_BURY_CARD = "Bury Card";
+    public static final String UNDO_TYPE_DELETE_CARD = "Delete Card";
+    
+    public String mCurrentUndoRedoType = "";
+    
 
     // Card order strings for building SQL statements
     private static final String[] revOrderStrings = { "priority desc, interval desc", "priority desc, interval",
@@ -1065,11 +1070,20 @@ public class Deck {
 
 
     /*
-     * Tomorrow's due cards ******************************
+     * Next day's due cards ******************************
      */
-    public int getNextDueCards() {
+    public int getNextDueCards(int day) {
+    	double dayStart = mDueCutoff + (86400 * (day - 1));
         String sql = String.format(Utils.ENGLISH_LOCALE,
-                "SELECT count(*) FROM cards c WHERE type = 0 OR type = 1 AND combinedDue < %f", mDueCutoff + 86400);
+                "SELECT count(*) FROM cards c WHERE type = 0 OR type = 1 AND combinedDue BETWEEN %f AND %f", dayStart, dayStart + 86400);
+        return (int) getDB().queryScalar(cardLimit("revActive", "revInactive", sql));
+    }
+
+
+    public int getNextDueMatureCards(int day) {
+    	double dayStart = mDueCutoff + (86400 * (day - 1));
+        String sql = String.format(Utils.ENGLISH_LOCALE,
+                "SELECT count(*) FROM cards c WHERE type = 0 OR type = 1 AND combinedDue BETWEEN %f AND %f AND interval >= %d", dayStart, dayStart + 86400, Card.MATURE_THRESHOLD);
         return (int) getDB().queryScalar(cardLimit("revActive", "revInactive", sql));
     }
 
@@ -1079,6 +1093,63 @@ public class Deck {
                 "SELECT count(*) FROM cards c WHERE type = 2 AND combinedDue < %f", mDueCutoff + 86400);
         return Math.min((int) getDB().queryScalar(cardLimit("newActive", "newInactive", sql)), mNewCardsPerDay);
     }
+
+
+    /*
+     * Next cards by interval ******************************
+     */
+    public int getCardsByInterval(int interval) {
+        String sql = String.format(Utils.ENGLISH_LOCALE,
+                "SELECT count(*) FROM cards c WHERE type = 0 OR type = 1 AND interval BETWEEN %d AND %d", interval, interval + 1);
+        return (int) getDB().queryScalar(cardLimit("revActive", "revInactive", sql));
+    }
+
+
+    /*
+     * Review counts ******************************
+     */
+    public int getDaysReviewed(int day) {
+        Date value = Utils.genToday(getUtcOffset() - (86400 * day));
+    	Cursor cur = null;
+    	int count = 0;
+    	try {
+            cur = getDB().getDatabase().rawQuery(String.format(Utils.ENGLISH_LOCALE,
+            		"SELECT reps FROM stats WHERE day = \'%tF\' AND reps > 0", value), null);
+            while (cur.moveToNext()) {
+            	count = cur.getInt(0);
+            }
+        } finally {
+            if (cur != null && !cur.isClosed()) {
+                cur.close();
+            }
+        }
+    	
+    	return count;
+    }
+
+
+    /*
+     * Review time ******************************
+     */
+    public int getReviewTime(int day) {
+        Date value = Utils.genToday(getUtcOffset() - (86400 * day));
+    	Cursor cur = null;
+    	int count = 0;
+    	try {
+            cur = getDB().getDatabase().rawQuery(String.format(Utils.ENGLISH_LOCALE,
+            		"SELECT reviewTime FROM stats WHERE day = \'%tF\' AND reps > 0", value), null);
+            while (cur.moveToNext()) {
+            	count = cur.getInt(0);
+            }
+        } finally {
+            if (cur != null && !cur.isClosed()) {
+                cur.close();
+            }
+        }
+    	
+    	return count;
+    }
+
 
     /*
      * Scheduler related overridable methods******************************
@@ -2408,6 +2479,29 @@ public class Deck {
         return mNeedUnpack;
     }
 
+    public double getDueCutoff() {
+        return mDueCutoff;
+    }
+
+
+    public ArrayList<Long> getCardsFromFactId(Long factId) {
+        Cursor cursor = null;
+        ArrayList<Long> cardIds = new ArrayList<Long>();
+        try {
+            cursor = getDB().getDatabase().rawQuery(
+                    "SELECT id FROM cards WHERE factid = " + factId, null);
+            while (cursor.moveToNext()) {
+                cardIds.add(cursor.getLong(0));
+            }
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+        }
+        return cardIds;
+    }
+
+
     /*
      * Getting the next card*****************************
      */
@@ -2638,7 +2732,7 @@ public class Deck {
 
     public void _answerCard(Card card, int ease) {
         Log.i(AnkiDroidApp.TAG, "answerCard");
-        String undoName = "Answer Card";
+        String undoName = UNDO_TYPE_ANSWER_CARD;
         setUndoStart(undoName, card.getId());
         double now = Utils.now();
 
@@ -3050,8 +3144,6 @@ public class Deck {
 
     public void addTag(long[] factIds, String tag) {
         ArrayList<String> factTagsList = factTags(factIds);
-        String undoName = "Add Tag";
-        setUndoStart(undoName);
 
         // Create tag if necessary
         long tagId = tagId(tag, true);
@@ -3097,17 +3189,13 @@ public class Deck {
         }
 
         flushMod();
-        setUndoEnd(undoName);
     }
 
 
     public void deleteTag(long factId, String tag) {
-        String undoName = "Delete Tag";
-        setUndoStart(undoName);
         long[] ids = new long[1];
         ids[0] = factId;
         deleteTag(ids, tag);
-        setUndoEnd(undoName);
     }
 
 
@@ -3175,18 +3263,11 @@ public class Deck {
      * @param ids List of card IDs of the cards that are to be suspended.
      */
     public void suspendCards(long[] ids) {
-        String undoName = "Suspend Card";
-        if (ids.length == 1) {
-            setUndoStart(undoName, ids[0]);        	
-        } else {
-        	setUndoStart(undoName);
-        }
         getDB().getDatabase().execSQL(
                 "UPDATE cards SET type = relativeDelay -3, priority = -3, modified = "
                         + String.format(Utils.ENGLISH_LOCALE, "%f", Utils.now())
                         + ", isDue = 0 WHERE type >= 0 AND id IN " + Utils.ids2str(ids));
         Log.i(AnkiDroidApp.TAG, "Cards suspended");
-        setUndoEnd(undoName);
         flushMod();
     }
 
@@ -3197,7 +3278,7 @@ public class Deck {
      * @param ids List of card IDs of the cards that are to be unsuspended.
      */
     public void unsuspendCards(long[] ids) {
-        getDB().getDatabase().execSQL(
+    	getDB().getDatabase().execSQL(
                 "UPDATE cards SET type = relativeDelay, priority = 0, " + "modified = "
                         + String.format(Utils.ENGLISH_LOCALE, "%f", Utils.now()) + " WHERE type < 0 AND id IN "
                         + Utils.ids2str(ids));
@@ -3219,7 +3300,7 @@ public class Deck {
      */
     public void buryFact(long factId, long cardId) {
         // TODO: Unbury fact after return to StudyOptions
-        String undoName = "Bury Fact";
+        String undoName = UNDO_TYPE_BURY_CARD;
         setUndoStart(undoName, cardId);         
         getDB().getDatabase().execSQL(
                 "UPDATE cards SET type = priority = -2, isDue = 0, type = type + 3 WHERE type >= 0 AND type <= 3 AND factId = " + factId);
@@ -3438,7 +3519,7 @@ public class Deck {
      */
     public void deleteCards(List<String> ids) {
         Log.i(AnkiDroidApp.TAG, "deleteCards = " + ids.toString());
-        String undoName = "delete Cards";
+        String undoName = UNDO_TYPE_DELETE_CARD;
         if (ids.size() == 1) {
             setUndoStart(undoName, Long.parseLong(ids.get(0)));         
         } else {
@@ -4082,7 +4163,7 @@ public class Deck {
     }
 
 
-    private long undoredo(Stack<UndoRow> src, Stack<UndoRow> dst, long oldCardId) {
+    private long undoredo(Stack<UndoRow> src, Stack<UndoRow> dst, long oldCardId, boolean inReview) {
 
         UndoRow row;
         commitToDB();
@@ -4105,9 +4186,14 @@ public class Deck {
         for (String s : sql) {
             getDB().getDatabase().execSQL(s);
         }
-
+        mCurrentUndoRedoType = row.mName;        
         Long newend = latestUndoRow();
-        dst.push(new UndoRow(row.mName, oldCardId, newstart, newend));
+
+        if (inReview) {
+        	dst.push(new UndoRow(row.mName, row.mCardId, newstart, newend));
+        } else {
+        	dst.push(new UndoRow(row.mName, oldCardId, newstart, newend));
+        }
         return row.mCardId;
     }
 
@@ -4115,10 +4201,10 @@ public class Deck {
     /**
      * Undo the last action(s). Caller must .reset()
      */
-    public long undo(long oldCardId) {
+    public long undo(long oldCardId, boolean inReview) {
         long cardId = 0;
     	if (!mUndoStack.isEmpty()) {
-            cardId = undoredo(mUndoStack, mRedoStack, oldCardId);
+            cardId = undoredo(mUndoStack, mRedoStack, oldCardId, inReview);
             commitToDB();
             reset();
         }
@@ -4129,10 +4215,10 @@ public class Deck {
     /**
      * Redo the last action(s). Caller must .reset()
      */
-    public long redo(long oldCardId) {
+    public long redo(long oldCardId, boolean inReview) {
         long cardId = 0;
         if (!mRedoStack.isEmpty()) {
-        	cardId = undoredo(mRedoStack, mUndoStack, oldCardId);
+        	cardId = undoredo(mRedoStack, mUndoStack, oldCardId, inReview);
             commitToDB();
             reset();
         }
@@ -4140,6 +4226,10 @@ public class Deck {
     }
 
 
+    public String getUndoType() {
+    	return mCurrentUndoRedoType;
+    }
+    
     /*
      * Dynamic indices*********************************************************
      */
