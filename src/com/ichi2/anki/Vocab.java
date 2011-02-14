@@ -329,7 +329,7 @@ public class Vocab extends Activity {
     			"where " +
 				"	c.name='%s' and " +
     			"	a.fieldmodelid=c.id and " +
-    			"	a.factid in (select factid from cards where type=2 order by %s) and " +
+    			"	a.factid in (select factid from cards where type=2 and factId not in (select distinct factId from cards where type!=2) order by %s) and " +
     			"	a.factid=b.id %s " +
     			"limit %d",
     			FIELD_FRONT,
@@ -343,7 +343,7 @@ public class Vocab extends Activity {
     			"where " +
 				"	c.name='%s' and " +
     			"	a.fieldmodelid=c.id and " +
-    			"	a.factid in (select factid from cards where type=2) and " +
+    			"	a.factid in (select factid from cards where type=2 and factId not in (select distinct factId from cards where type!=2)) and " +
     			"	a.factid=b.id %s " +
     			"limit %d",
     			FIELD_BACK,
